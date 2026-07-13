@@ -1,0 +1,479 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+/* ------------------------------------------------------------------ */
+/* Design tokens — layout is identical; only colors shift per theme  */
+/* ------------------------------------------------------------------ */
+
+:root[data-mantine-color-scheme="light"] {
+  color-scheme: light;
+
+  --mantine-color-body: #f4f6f8;
+  --mantine-primary-color-filled: #0052ff;
+  --mantine-primary-color-filled-hover: #0047e0;
+
+  --panel-bg: #f4f6f8;
+  --panel-surface: #ffffff;
+  --panel-surface-raised: #ffffff;
+  --panel-border: #d1d5db;
+  --panel-border-accent: #0052ff;
+  --panel-text: #1a2332;
+  --panel-text-muted: #5c6778;
+  --panel-accent: #0052ff;
+  --panel-accent-hover: #0047e0;
+  --panel-accent-text: #ffffff;
+  --panel-grid-dot: rgba(0, 82, 255, 0.08);
+  --panel-grid-line: rgba(0, 82, 255, 0.04);
+  --panel-contrast-block: #1a2332;
+  --panel-tile-bg: #ffffff;
+  --panel-tile-hover-bg: #0052ff;
+  --panel-tile-hover-text: #ffffff;
+  --panel-tile-selected-bg: #0052ff;
+  --panel-tile-selected-text: #ffffff;
+  --panel-console-bg: #ffffff;
+}
+
+:root[data-mantine-color-scheme="dark"] {
+  color-scheme: dark;
+
+  --mantine-color-body: #0f111a;
+  --mantine-primary-color-filled: #ff5722;
+  --mantine-primary-color-filled-hover: #ff6b35;
+
+  --panel-bg: #0f111a;
+  --panel-surface: #16171d;
+  --panel-surface-raised: #1c1e26;
+  --panel-border: #2a2d38;
+  --panel-border-accent: #ff5722;
+  --panel-text: #e8eaed;
+  --panel-text-muted: #9aa0ab;
+  --panel-accent: #ff5722;
+  --panel-accent-hover: #ff6b35;
+  --panel-accent-text: #ffffff;
+  --panel-grid-dot: rgba(255, 87, 34, 0.1);
+  --panel-grid-line: rgba(255, 87, 34, 0.05);
+  --panel-contrast-block: #ff5722;
+  --panel-tile-bg: #16171d;
+  --panel-tile-hover-bg: #ff5722;
+  --panel-tile-hover-text: #ffffff;
+  --panel-tile-selected-bg: #ff5722;
+  --panel-tile-selected-text: #ffffff;
+  --panel-console-bg: #16171d;
+}
+
+/* Global hard-edge reset */
+*,
+*::before,
+*::after {
+  border-radius: 0 !important;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  background-color: var(--panel-bg);
+  color: var(--panel-text);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+body .mantine-Button-root,
+body .mantine-SegmentedControl-label,
+body .mantine-Modal-title,
+body .mantine-Alert-title,
+body .mantine-Title-root {
+  text-transform: lowercase;
+}
+
+.question-text {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+/* ------------------------------------------------------------------ */
+/* Contrast-block headings (Talk to Frank style)                       */
+/* ------------------------------------------------------------------ */
+
+.contrast-block {
+  display: inline-block;
+  background-color: var(--panel-contrast-block);
+  color: var(--panel-accent-text);
+  font-weight: 700;
+  font-family: "Inter", system-ui, sans-serif;
+  padding: 0.35rem 0.65rem;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+}
+
+.contrast-block--accent {
+  background-color: var(--panel-accent);
+}
+
+.meta-mono {
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  color: var(--panel-text-muted);
+}
+
+/* ------------------------------------------------------------------ */
+/* Square custom checkbox                                              */
+/* ------------------------------------------------------------------ */
+
+.square-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 1px solid var(--panel-border-accent);
+  background-color: var(--panel-surface);
+  cursor: pointer;
+  transition: none;
+}
+
+.square-checkbox[data-checked="true"] {
+  background-color: var(--panel-accent);
+  border-color: var(--panel-accent);
+}
+
+.square-checkbox[data-checked="true"]::after {
+  content: "";
+  display: block;
+  width: 6px;
+  height: 10px;
+  border: solid var(--panel-accent-text);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+
+.square-checkbox[data-indeterminate="true"] {
+  background-color: var(--panel-accent);
+  border-color: var(--panel-accent);
+}
+
+.square-checkbox[data-indeterminate="true"]::after {
+  content: "";
+  display: block;
+  width: 8px;
+  height: 2px;
+  background-color: var(--panel-accent-text);
+}
+
+.square-checkbox[data-disabled="true"] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.square-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.square-checkbox-label[data-disabled="true"] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------ */
+/* Topic selection tile grid                                           */
+/* ------------------------------------------------------------------ */
+
+.topic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0;
+  border: 1px solid var(--panel-border);
+}
+
+.topic-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 120px;
+  min-width: 0;
+  padding: 0.75rem;
+  background-color: var(--panel-tile-bg);
+  border: 1px solid var(--panel-border);
+  margin: -1px 0 0 -1px;
+  cursor: pointer;
+  color: var(--panel-text);
+  transition: none;
+}
+
+.topic-tile:hover,
+.topic-tile[data-selected="true"] {
+  background-color: var(--panel-tile-hover-bg);
+  border-color: var(--panel-accent);
+  color: var(--panel-tile-hover-text);
+  z-index: 1;
+}
+
+.topic-tile[data-selected="true"] {
+  background-color: var(--panel-tile-selected-bg);
+  color: var(--panel-tile-selected-text);
+}
+
+.topic-tile:hover .topic-tile__name,
+.topic-tile[data-selected="true"] .topic-tile__name {
+  color: inherit;
+}
+
+.topic-tile:hover .katex,
+.topic-tile[data-selected="true"] .katex {
+  color: inherit;
+}
+
+.topic-tile__name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.3;
+  text-transform: lowercase;
+}
+
+.topic-tile__equation {
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.35;
+  padding: 0 0.15rem;
+}
+
+.topic-tile__equation .katex {
+  max-width: 100%;
+  font-size: 1em;
+  white-space: normal;
+  display: inline;
+  text-align: center;
+}
+
+.topic-tile__equation .katex-display {
+  margin: 0;
+  display: inline;
+}
+
+.topic-tile__spec {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.65rem;
+  opacity: 0.7;
+  letter-spacing: 0.03em;
+}
+
+.topic-tile__checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+/* Inverted checkbox on hover/selected tile */
+.topic-tile:hover .square-checkbox,
+.topic-tile[data-selected="true"] .square-checkbox {
+  border-color: var(--panel-accent-text);
+  background-color: transparent;
+}
+
+.topic-tile:hover .square-checkbox[data-checked="true"],
+.topic-tile[data-selected="true"] .square-checkbox[data-checked="true"] {
+  background-color: var(--panel-accent-text);
+  border-color: var(--panel-accent-text);
+}
+
+.topic-tile:hover .square-checkbox[data-checked="true"]::after,
+.topic-tile[data-selected="true"] .square-checkbox[data-checked="true"]::after {
+  border-color: var(--panel-accent);
+}
+
+/* ------------------------------------------------------------------ */
+/* Blueprint / dot-matrix working area                                 */
+/* ------------------------------------------------------------------ */
+
+.working-area {
+  min-height: 40vh;
+  background-color: var(--panel-surface);
+  border: 1px solid var(--panel-border);
+  background-image:
+    radial-gradient(circle, var(--panel-grid-dot) 1px, transparent 1px),
+    linear-gradient(var(--panel-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--panel-grid-line) 1px, transparent 1px);
+  background-size:
+    10px 10px,
+    10px 10px,
+    10px 10px;
+  background-position:
+    0 0,
+    0 0,
+    0 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Console navigation bar (quiz single view)                           */
+/* ------------------------------------------------------------------ */
+
+.console-bar {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--panel-border);
+  background-color: var(--panel-console-bg);
+}
+
+.console-bar__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-width: 120px;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-right: 1px solid var(--panel-border);
+  background-color: var(--panel-surface);
+  color: var(--panel-text);
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  cursor: pointer;
+  transition: none;
+}
+
+.console-bar__btn:last-child {
+  border-right: none;
+}
+
+.console-bar__btn:hover:not(:disabled) {
+  background-color: var(--panel-accent);
+  color: var(--panel-accent-text);
+}
+
+.console-bar__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.console-bar__counter {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  border-right: 1px solid var(--panel-border);
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  color: var(--panel-text-muted);
+  background-color: var(--panel-surface-raised);
+}
+
+/* ------------------------------------------------------------------ */
+/* Panel surfaces                                                      */
+/* ------------------------------------------------------------------ */
+
+.panel-surface {
+  background-color: var(--panel-surface);
+  border: 1px solid var(--panel-border);
+}
+
+.panel-header {
+  border-bottom: 1px solid var(--panel-border);
+  background-color: var(--panel-surface);
+}
+
+.section-accent-bar {
+  display: inline-block;
+  width: 4px;
+  height: 1.25rem;
+  background-color: var(--panel-accent);
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+/* ------------------------------------------------------------------ */
+/* Primary CTA — "Ready?" button                                     */
+/* ------------------------------------------------------------------ */
+
+.btn-ready {
+  background-color: var(--panel-accent) !important;
+  color: var(--panel-accent-text) !important;
+  font-weight: 700;
+  min-width: 140px;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.btn-ready:hover:not(:disabled) {
+  background-color: var(--panel-accent-hover) !important;
+  transform: translateY(-1px);
+}
+
+.btn-ready:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-ready:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------ */
+/* Print styles                                                        */
+/* ------------------------------------------------------------------ */
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only,
+  .quiz-content,
+  .quiz-print-all {
+    display: block !important;
+  }
+
+  .quiz-screen,
+  .no-print {
+    display: none !important;
+  }
+
+  .print-question {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 24px;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .print-answer-box {
+    display: block !important;
+    height: 140px;
+    border: 1px solid #ced4da;
+    margin-top: 12px;
+  }
+}
+
+.print-answer-box {
+  display: none;
+}
+
+.quiz-print-all {
+  display: none;
+}
