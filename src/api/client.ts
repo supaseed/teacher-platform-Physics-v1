@@ -1,5 +1,9 @@
 import { API_BASE } from "./config";
 
+function apiUrl(path: string): string {
+  return `${API_BASE.replace(/\/$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 /** Error thrown when the backend responds with a non-2xx status. */
 export class ApiError extends Error {
   readonly status: number;
@@ -26,7 +30,7 @@ async function parseError(res: Response): Promise<string> {
 
 /** Typed GET request. */
 export async function apiGet<TResponse>(path: string): Promise<TResponse> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(apiUrl(path), {
     method: "GET",
     headers: { Accept: "application/json" },
   });
@@ -41,7 +45,7 @@ export async function apiPost<TResponse, TBody>(
   path: string,
   body: TBody,
 ): Promise<TResponse> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(apiUrl(path), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
