@@ -90,6 +90,13 @@ export function normalizeGenerateQuizResponse(
     skipped_topics: Array.isArray(raw.skipped_topics)
       ? (raw.skipped_topics as string[])
       : [],
+    quiz_mode:
+      raw.quiz_mode === "custom" ||
+      raw.quiz_mode === "beginner" ||
+      raw.quiz_mode === "standard_progression" ||
+      raw.quiz_mode === "randomised"
+        ? raw.quiz_mode
+        : undefined,
     tranche_selection: {
       include_rearrangements:
         (raw.tranche_selection as { include_rearrangements?: boolean })
@@ -97,6 +104,14 @@ export function normalizeGenerateQuizResponse(
       include_conversions:
         (raw.tranche_selection as { include_conversions?: boolean })
           ?.include_conversions === true,
+      tranches: Array.isArray(
+        (raw.tranche_selection as { tranches?: unknown })?.tranches,
+      )
+        ? ((raw.tranche_selection as { tranches: string[] }).tranches.filter(
+            (t): t is "A" | "B" | "C" | "D" =>
+              t === "A" || t === "B" || t === "C" || t === "D",
+          ) as ("A" | "B" | "C" | "D")[])
+        : undefined,
     },
     allowed_tranches: Array.isArray(raw.allowed_tranches)
       ? (raw.allowed_tranches as string[])

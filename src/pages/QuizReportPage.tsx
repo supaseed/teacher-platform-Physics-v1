@@ -15,9 +15,7 @@ import {
 import { IconArrowLeft, IconCheck, IconX } from "@tabler/icons-react";
 
 import { useQuiz } from "../state/QuizContext";
-import { Katex } from "../components/Katex";
 import { ThemeToggle } from "../components/ThemeToggle";
-import { containsLatex } from "../utils/latex";
 
 export function QuizReportPage() {
   const navigate = useNavigate();
@@ -44,7 +42,7 @@ export function QuizReportPage() {
     return (
       <Center h="100vh">
         <Stack align="center" gap="md">
-          <Text c="dimmed">no completed quiz to summarize.</Text>
+          <Text c="dimmed">no completed practice set to summarize.</Text>
           <Button
             onClick={() => navigate("/")}
             leftSection={<IconArrowLeft size={16} />}
@@ -60,7 +58,7 @@ export function QuizReportPage() {
     );
   }
 
-  const handleNewQuiz = () => {
+  const handleNewSet = () => {
     resetQuizSession();
     navigate("/");
   };
@@ -71,7 +69,7 @@ export function QuizReportPage() {
         <Group justify="space-between" align="flex-start" wrap="wrap">
           <Box>
             <Title order={1} mb="xs">
-              <span className="contrast-block">quiz</span>{" "}
+              <span className="contrast-block">practice set</span>{" "}
               <span className="contrast-block contrast-block--accent">report</span>
             </Title>
             <Text c="dimmed">
@@ -111,7 +109,7 @@ export function QuizReportPage() {
                     wrap="wrap"
                     align="flex-start"
                   >
-                    <Text fw={600}>q{record.index + 1}</Text>
+                    <Text fw={600}>Q{record.index + 1}</Text>
                     <Text ff="monospace" size="sm">
                       {record.correctValue} {record.correctUnit}
                     </Text>
@@ -134,7 +132,7 @@ export function QuizReportPage() {
                 {summary.mistakes.map((record) => (
                   <Box key={record.questionId}>
                     <Text fw={600} mb="xs">
-                      q{record.index + 1}
+                      Q{record.index + 1}
                     </Text>
                     <Stack gap={6}>
                       <Group gap="xs" wrap="wrap">
@@ -153,19 +151,6 @@ export function QuizReportPage() {
                           {record.correctValue} {record.correctUnit}
                         </Text>
                       </Group>
-                      {record.rearrangedEquation &&
-                        (containsLatex(record.rearrangedEquation) ? (
-                          <Box>
-                            <Text className="meta-mono" mb={4}>
-                              required equation
-                            </Text>
-                            <Katex math={record.rearrangedEquation} block />
-                          </Box>
-                        ) : (
-                          <Text ff="monospace" size="sm">
-                            {record.rearrangedEquation}
-                          </Text>
-                        ))}
                     </Stack>
                     <Divider color="var(--panel-border)" mt="md" />
                   </Box>
@@ -182,13 +167,13 @@ export function QuizReportPage() {
             onClick={() => navigate("/quiz")}
             style={{ borderColor: "var(--panel-border)" }}
           >
-            back to quiz
+            back to practice set
           </Button>
           <Button
             className="btn-ready"
-            onClick={handleNewQuiz}
+            onClick={handleNewSet}
           >
-            new quiz
+            new practice set
           </Button>
         </Group>
       </Stack>

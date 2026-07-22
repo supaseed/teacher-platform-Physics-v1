@@ -1,0 +1,115 @@
+{
+  "edx_8_15_efficiency": {
+    "topic_key": "efficiency",
+    "board": "edexcel",
+    "paper": 2,
+    "equation_latex": "\\text{efficiency} = \\frac{\\text{useful energy output}}{\\text{total energy input}}",
+    "availability": {
+      "separate": {
+        "foundation": true,
+        "higher": true
+      },
+      "combined": {
+        "foundation": true,
+        "higher": true
+      }
+    },
+    "edexcel_only": true,
+    "spec_code": "8.15",
+    "sort_key": [
+      8,
+      15
+    ]
+  },
+  "edx_10_27_ivt_energy_ivt": {
+    "topic_key": "energy_ivt",
+    "source_topic_key": "energy_pt",
+    "board": "edexcel",
+    "paper": 2,
+    "equation_latex": "E = I V t",
+    "availability": {
+      "separate": {
+        "foundation": true,
+        "higher": true
+      },
+      "combined": {
+        "foundation": true,
+        "higher": true
+      }
+    },
+    "edexcel_only": true,
+    "display_name": "Energy (Electrical 3)",
+    "spec_code": "10.27",
+    "sort_key": [
+      10,
+      27
+    ]
+  },
+  "edx_8_8_gravitational_potential_energy": {
+    "topic_key": "gravitational_potential_energy",
+    "board": "edexcel",
+    "paper": 2,
+    "equation_latex": "\\Delta GPE = m g \\Delta h",
+    "availability": {
+      "separate": {
+        "foundation": true,
+        "higher": true
+      },
+      "combined": {
+        "foundation": true,
+        "higher": true
+      }
+    },
+    "edexcel_only": true,
+    "spec_code": "8.8",
+    "sort_key": [
+      8,
+      8
+    ],
+    "display_name": "Gravitational Potential"
+  },
+  "edx_8_9_kinetic_energy": {
+    "topic_key": "kinetic_energy",
+    "board": "edexcel",
+    "paper": 2,
+    "equation_latex": "KE = \\frac{1}{2} m v^2",
+    "availability": {
+      "separate": {
+        "foundation": true,
+        "higher": true
+      },
+      "combined": {
+        "foundation": true,
+        "higher": true
+      }
+    },
+    "edexcel_only": true,
+    "spec_code": "8.9",
+    "sort_key": [
+      8,
+      9
+    ]
+  },
+  "edx_4_6_wave_speed": {
+    "topic_key": "wave_speed",
+    "board": "edexcel",
+    "paper": 1,
+    "equation_latex": "v = \\frac{x}{t}",
+    "availability": {
+      "separate": {
+        "foundation": true,
+        "higher": true
+      },
+      "combined": {
+        "foundation": true,
+        "higher": true
+      }
+    },
+    "edexcel_only": true,
+    "spec_code": "4.6",
+    "sort_key": [
+      4,
+      6
+    ]
+  }
+}

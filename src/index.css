@@ -95,6 +95,58 @@ body .mantine-Title-root {
   font-weight: 500;
 }
 
+/* Exam-style delivery sentence on its own line beneath the stem */
+.question-command {
+  display: block;
+  margin-top: 0.9em;
+}
+
+/* Mantine Text / KaTeX set their own font-size; force inherit from .question-text */
+.question-text .mantine-Text-root,
+.question-text p {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+.question-text .katex {
+  font-size: 1em !important;
+}
+
+/* Screen display presets — data attribute is more reliable than CSS vars alone */
+.quiz-screen[data-font-preset="normal"] .question-text,
+.quiz-screen[data-font-preset="normal"] .question-equation,
+.quiz-screen[data-font-preset="normal"] .mcq-option-label {
+  font-size: 1.05rem !important;
+}
+
+.quiz-screen[data-font-preset="classroom"] .question-text,
+.quiz-screen[data-font-preset="classroom"] .question-equation,
+.quiz-screen[data-font-preset="classroom"] .mcq-option-label {
+  font-size: 1.5rem !important;
+}
+
+.quiz-screen[data-font-preset="large"] .question-text,
+.quiz-screen[data-font-preset="large"] .question-equation,
+.quiz-screen[data-font-preset="large"] .mcq-option-label {
+  font-size: 1.75rem !important;
+}
+
+.quiz-screen[data-font-preset="extra-large"] .question-text,
+.quiz-screen[data-font-preset="extra-large"] .question-equation,
+.quiz-screen[data-font-preset="extra-large"] .mcq-option-label {
+  font-size: 2rem !important;
+}
+
+.question-equation .katex {
+  font-size: 1em !important;
+}
+
+.mcq-option-label {
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
 /* ------------------------------------------------------------------ */
 /* Contrast-block headings (Talk to Frank style)                       */
 /* ------------------------------------------------------------------ */
@@ -109,6 +161,10 @@ body .mantine-Title-root {
   line-height: 1.2;
   letter-spacing: 0.02em;
   text-transform: lowercase;
+}
+
+.contrast-block.question-label {
+  text-transform: none;
 }
 
 .contrast-block--accent {
@@ -205,6 +261,7 @@ body .mantine-Title-root {
   min-height: 120px;
   min-width: 0;
   padding: 0.75rem;
+  padding-bottom: 1.5rem;
   background-color: var(--panel-tile-bg);
   border: 1px solid var(--panel-border);
   margin: -1px 0 0 -1px;
@@ -224,6 +281,42 @@ body .mantine-Title-root {
 .topic-tile[data-selected="true"] {
   background-color: var(--panel-tile-selected-bg);
   color: var(--panel-tile-selected-text);
+}
+
+.topic-tile[data-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background-color: var(--panel-tile-bg);
+  color: var(--panel-text-muted);
+}
+
+.topic-tile[data-disabled="true"]:hover,
+.topic-tile[data-disabled="true"][data-selected="true"] {
+  background-color: var(--panel-tile-bg);
+  border-color: var(--panel-border);
+  color: var(--panel-text-muted);
+  z-index: 0;
+}
+
+.topic-tile[data-disabled="true"] .katex {
+  color: var(--panel-text-muted);
+}
+
+.topic-tile__badge {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  z-index: 2;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--panel-accent);
+}
+
+.topic-tile[data-disabled="true"] .topic-tile__badge {
+  opacity: 0.85;
 }
 
 .topic-tile:hover .topic-tile__name,
@@ -269,10 +362,18 @@ body .mantine-Title-root {
 }
 
 .topic-tile__spec {
+  position: absolute;
+  bottom: 0.45rem;
+  left: 0.55rem;
+  z-index: 2;
   font-family: "JetBrains Mono", "Fira Code", monospace;
   font-size: 0.65rem;
   opacity: 0.7;
   letter-spacing: 0.03em;
+}
+
+.topic-tile[data-disabled="true"] .topic-tile__spec {
+  opacity: 0.85;
 }
 
 .topic-tile__checkbox-row {
@@ -319,6 +420,156 @@ body .mantine-Title-root {
     0 0,
     0 0,
     0 0;
+}
+
+.question-card--rail .working-area {
+  min-height: 18vh;
+}
+
+.question-card__grid {
+  display: grid;
+  /* Wide prompt/answer column; narrow fixed action rail on the right */
+  grid-template-columns: minmax(0, 1fr) 11.5rem;
+  gap: 0.75rem 1rem;
+  align-items: start;
+}
+
+.question-card__grid--options {
+  grid-template-columns: minmax(0, 1fr) minmax(9.5rem, 13rem) 11.5rem;
+}
+
+.question-card__prompt {
+  min-width: 0;
+}
+
+.question-card__actions {
+  width: 100%;
+}
+
+.question-card__action-btn {
+  justify-content: flex-start;
+}
+
+.question-options-panel {
+  min-width: 0;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--panel-border);
+  background-color: var(--panel-surface-raised);
+  align-self: start;
+  animation: question-options-slide-in 0.22s ease-out;
+}
+
+.question-options-panel__label {
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+@keyframes question-options-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.panel-header--bottom {
+  border-bottom: none;
+  border-top: 1px solid var(--panel-border);
+  margin-top: auto;
+}
+
+.quiz-banner {
+  padding: 0.65rem 0;
+}
+
+.quiz-banner-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem 1rem;
+  min-height: 3rem;
+}
+
+.quiz-banner-row__center {
+  text-align: center;
+  justify-self: center;
+}
+
+.quiz-banner-row__end {
+  justify-self: end;
+}
+
+.quiz-banner-divider {
+  width: 1px;
+  align-self: stretch;
+  min-height: 1.75rem;
+  background-color: var(--panel-border);
+  flex-shrink: 0;
+}
+
+.font-size-controls__label {
+  font-size: 0.7rem !important;
+  white-space: nowrap;
+}
+
+.font-size-controls__value {
+  min-width: 4.25rem;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-transform: lowercase;
+}
+
+.practice-mode-label {
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  color: var(--panel-accent-text);
+  background-color: var(--panel-accent);
+  padding: 0.35rem 0.75rem;
+  white-space: nowrap;
+}
+
+.practice-mode-label[data-empty] {
+  background-color: var(--panel-surface-raised);
+  color: var(--panel-text-muted);
+}
+
+@media (max-width: 1100px) {
+  .quiz-banner-row {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    min-height: 0;
+  }
+
+  .quiz-banner-row__center,
+  .quiz-banner-row__end {
+    justify-self: start;
+  }
+
+  .quiz-banner-row__end {
+    flex-wrap: wrap;
+  }
+
+  .question-card__grid,
+  .question-card__grid--options {
+    grid-template-columns: 1fr;
+  }
+
+  .question-card__actions {
+    max-width: 14rem;
+  }
+
+  .question-options-panel {
+    max-width: 16rem;
+    animation: none;
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -376,6 +627,7 @@ body .mantine-Title-root {
   font-family: "JetBrains Mono", "Fira Code", monospace;
   font-size: 0.85rem;
   letter-spacing: 0.08em;
+  text-transform: none;
   color: var(--panel-text-muted);
   background-color: var(--panel-surface-raised);
 }
@@ -439,19 +691,70 @@ body .mantine-Title-root {
     color: #000;
   }
 
-  .no-print {
+  .no-print,
+  .mantine-Modal-root,
+  .mantine-Overlay-root {
     display: none !important;
   }
 
   .print-only,
-  .quiz-content,
-  .quiz-print-all {
+  .quiz-content {
     display: block !important;
   }
 
   .quiz-screen,
   .no-print {
     display: none !important;
+  }
+
+  /* Default / standard: show standard print block only */
+  .quiz-print-all {
+    display: block !important;
+  }
+
+  .quiz-print-all-large {
+    display: none !important;
+  }
+
+  body[data-print-mode="large"] .quiz-print-all {
+    display: none !important;
+  }
+
+  body[data-print-mode="large"] .quiz-print-all-large {
+    display: block !important;
+  }
+
+  /* Standard print keeps base .question-text size (1.05rem) */
+  .quiz-print-all .question-text,
+  .quiz-print-all .question-text .mantine-Text-root,
+  .quiz-print-all .question-text .katex {
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Large print: explicit 18pt on text + math (Mantine/KaTeX would otherwise override) */
+  body[data-print-mode="large"] .quiz-print-all-large .question-text,
+  body[data-print-mode="large"] .quiz-print-all-large .question-text .mantine-Text-root,
+  body[data-print-mode="large"] .quiz-print-all-large .question-text .katex {
+    font-size: 18pt !important;
+    line-height: 1.5 !important;
+  }
+
+  body[data-print-mode="large"] .print-answer-box {
+    height: 200px;
+  }
+
+  .print-large-banner {
+    display: none;
+  }
+
+  body[data-print-mode="large"] .print-large-banner {
+    display: block !important;
+    font-size: 14pt !important;
+    font-weight: 700;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   .print-question {
@@ -474,6 +777,11 @@ body .mantine-Title-root {
   display: none;
 }
 
-.quiz-print-all {
+.print-large-banner {
+  display: none;
+}
+
+.quiz-print-all,
+.quiz-print-all-large {
   display: none;
 }
