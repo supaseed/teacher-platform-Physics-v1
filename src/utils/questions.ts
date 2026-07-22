@@ -48,9 +48,9 @@ export function baseEquation(question: Question): string | undefined {
   return question.equation_latex || undefined;
 }
 
-/** Rearranged equation used to solve for the answer. */
-export function rearrangedEquation(question: Question): string | undefined {
-  return question.correct_formula ?? question.equation_latex ?? undefined;
+/** Rearranged equation used to solve for the answer (reserved for future use). */
+export function rearrangedEquation(_question: Question): string | undefined {
+  return undefined;
 }
 
 /** True when the backend supplied at least one multiple-choice option. */

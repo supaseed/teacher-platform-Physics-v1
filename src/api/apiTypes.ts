@@ -4,6 +4,49 @@
 /** Which paper a subtopic belongs to. */
 export type PaperNumber = 1 | 2;
 
+export type ExamBoardId = "aqa" | "ocr" | "edexcel";
+export type PathwayId = "separate" | "combined";
+export type TierId = "foundation" | "higher";
+
+export interface DisplayContext {
+  board: ExamBoardId;
+  pathway: PathwayId;
+  tier: TierId;
+}
+
+/** Per-tier presentation metadata within a pathway. */
+export interface TopicPresentation {
+  spec_code?: string;
+  paper?: PaperNumber;
+  sort_key?: Array<string | number>;
+  equation_latex?: string;
+  word_equation?: string;
+  equation_ref?: string;
+}
+
+/** Selector placement override for multi-spec / alternate equation tiles. */
+export interface SelectorPlacement {
+  display_name?: string;
+  spec_code?: string;
+  paper?: PaperNumber;
+  sort_key?: Array<string | number>;
+  equation_latex?: string;
+  /** When true the selector entry is omitted unless the active board is AQA. */
+  aqa_only?: boolean;
+  /** When true the selector entry is omitted unless the active board is OCR. */
+  ocr_only?: boolean;
+  /** When true the selector entry is omitted unless the active board is Edexcel. */
+  edexcel_only?: boolean;
+}
+
+/** Availability matrix for one exam board on a topic. */
+export interface BoardTopicMeta {
+  availability: Record<PathwayId, Partial<Record<TierId, boolean>>>;
+  presentations?: Partial<
+    Record<PathwayId, Partial<Record<TierId, TopicPresentation>>>
+  >;
+}
+
 /** The four variant identifiers used by the generator API (A–D). */
 export type VariantId = "A" | "B" | "C" | "D";
 
@@ -20,6 +63,10 @@ export interface SubtopicMeta {
   /** AQA spec reference, e.g. "4.1.1.2". May be missing on some entries. */
   spec_code?: string;
   available_tranches: AvailableTranches;
+  /** Per-exam-board availability and presentation metadata. */
+  boards?: Partial<Record<ExamBoardId, BoardTopicMeta>>;
+  /** AQA filename-derived placement override (see metadata/aqa_selector_placements.json). */
+  selector_placement?: SelectorPlacement;
 }
 
 /**
@@ -37,7 +84,19 @@ export interface SubtopicEntry extends SubtopicMeta {
 export interface TrancheSelection {
   include_rearrangements: boolean;
   include_conversions: boolean;
+  /** Explicit tranche letters for custom practice (overrides boolean flags). */
+  tranches?: VariantId[];
 }
+
+/**
+ * Practice mode for POST /generate-quiz.
+ * Preset modes ignore count/tranche_selection and always return 8 questions.
+ */
+export type QuizMode =
+  | "custom"
+  | "beginner"
+  | "standard_progression"
+  | "randomised";
 
 /** Body for POST /generate-quiz. */
 export interface GenerateQuizRequest {
@@ -46,6 +105,8 @@ export interface GenerateQuizRequest {
   include_answer: boolean;
   include_formula: boolean;
   count?: number;
+  quiz_mode?: QuizMode;
+  display_context?: DisplayContext;
 }
 
 /** The letter keys used for multiple-choice options. */
@@ -90,6 +151,7 @@ export interface GenerateQuizResponse {
   count: number;
   topics: string[];
   skipped_topics: string[];
+  quiz_mode?: QuizMode;
   tranche_selection: TrancheSelection;
   allowed_tranches: string[];
   include_answer: boolean;

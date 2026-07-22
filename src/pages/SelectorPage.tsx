@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Alert,
@@ -19,47 +19,57 @@ import { notifications } from "@mantine/notifications";
 import { useGenerateQuiz, useSubtopicMeta } from "../api/hooks";
 import { useQuiz } from "../state/QuizContext";
 import { SubtopicCard } from "../components/SubtopicCard";
-import { SquareCheckbox, SquareCheckboxLabel } from "../components/SquareCheckbox";
+import { DisplayPreferencesBar } from "../components/DisplayPreferencesBar";
+import { SquareCheckbox } from "../components/SquareCheckbox";
 import { ThemeToggle } from "../components/ThemeToggle";
 import {
   QuizConfigModal,
   type QuizConfig,
 } from "../components/QuizConfigModal";
 import {
-  buildVariantSelection,
-  computeVariantAvailability,
+  buildTrancheSelection,
+  computeTrancheAvailability,
+  normalizeSelectedTranches,
   selectedTopicKeys,
-  splitByPaper,
   toEntries,
 } from "../utils/subtopics";
-import type { SubtopicEntry } from "../api/apiTypes";
+import {
+  countSelectable,
+  enrichForDisplay,
+  loadStoredDisplayContext,
+  splitByPaperForDisplay,
+  storeDisplayContext,
+  type DisplayableEntry,
+} from "../utils/displayContext";
+import type { DisplayContext } from "../api/apiTypes";
+import { loadStoredFontPreset } from "../utils/questionFontSize";
 
 const DEFAULT_CONFIG: QuizConfig = {
-  questionTypeMode: "standard",
-  rearrangements: false,
-  conversions: false,
-  questionCount: 10,
-  viewMode: "list",
-  generatePdf: false,
+  practiceMode: "standard_progression",
+  selectedTranches: { A: true, B: false, C: false, D: false },
+  questionCount: 8,
 };
 
 function PaperColumn({
   title,
   entries,
   selectedIds,
-  showSpecCodes,
   onToggle,
   onSelectAll,
 }: {
   title: string;
-  entries: SubtopicEntry[];
+  entries: DisplayableEntry[];
   selectedIds: string[];
-  showSpecCodes: boolean;
   onToggle: (id: string) => void;
   onSelectAll: (select: boolean) => void;
 }) {
-  const selectedCount = entries.filter((e) => selectedIds.includes(e.id)).length;
-  const allSelected = entries.length > 0 && selectedCount === entries.length;
+  const selectableEntries = entries.filter((e) => e.selectable);
+  const selectedCount = selectableEntries.filter((e) =>
+    selectedIds.includes(e.id),
+  ).length;
+  const allSelected =
+    selectableEntries.length > 0 &&
+    selectedCount === selectableEntries.length;
   const someSelected = selectedCount > 0 && !allSelected;
 
   return (
@@ -69,7 +79,7 @@ function PaperColumn({
           <SquareCheckbox
             checked={allSelected}
             indeterminate={someSelected}
-            disabled={entries.length === 0}
+            disabled={selectableEntries.length === 0}
             onChange={() => onSelectAll(!allSelected)}
             aria-label={`Select all ${title} equations`}
           />
@@ -78,7 +88,9 @@ function PaperColumn({
             {title}
           </Title>
         </Group>
-        <Text className="meta-mono">{entries.length} eq</Text>
+        <Text className="meta-mono">
+          {countSelectable(entries)}/{entries.length} eq
+        </Text>
       </Group>
       {entries.length === 0 ? (
         <Text c="dimmed" size="sm">
@@ -91,7 +103,8 @@ function PaperColumn({
               key={entry.id}
               entry={entry}
               selected={selectedIds.includes(entry.id)}
-              showSpecCode={showSpecCodes}
+              disabled={!entry.selectable}
+              higherOnly={entry.higherOnly}
               onToggle={onToggle}
             />
           ))}
@@ -103,44 +116,70 @@ function PaperColumn({
 
 export function SelectorPage() {
   const navigate = useNavigate();
-  const { startNewQuiz, setPreferences } = useQuiz();
+  const { startNewQuiz, setPreferences, preferences } = useQuiz();
   const { data: meta, isLoading, isError, error, refetch } = useSubtopicMeta();
   const generateQuiz = useGenerateQuiz();
   const [configModalOpened, { open: openConfigModal, close: closeConfigModal }] =
     useDisclosure(false);
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [showSpecCodes, setShowSpecCodes] = useState(false);
   const [config, setConfig] = useState<QuizConfig>(DEFAULT_CONFIG);
+  const [draftContext, setDraftContext] = useState<DisplayContext>(
+    loadStoredDisplayContext,
+  );
+  const [appliedContext, setAppliedContext] = useState<DisplayContext>(
+    loadStoredDisplayContext,
+  );
 
-  const { paper1, paper2 } = useMemo(
-    () => (meta ? splitByPaper(toEntries(meta)) : { paper1: [], paper2: [] }),
+  const allEntries = useMemo(
+    () => (meta ? toEntries(meta) : []),
     [meta],
   );
 
-  const availability = useMemo(
+  const displayEntries = useMemo(
+    () => enrichForDisplay(allEntries, appliedContext),
+    [allEntries, appliedContext],
+  );
+
+  const { paper1, paper2 } = useMemo(
+    () => splitByPaperForDisplay(displayEntries, appliedContext),
+    [displayEntries, appliedContext],
+  );
+
+  const trancheAvailability = useMemo(
     () =>
       meta
-        ? computeVariantAvailability(selectedIds, meta)
-        : { rearrangements: false, conversions: false },
+        ? computeTrancheAvailability(selectedIds, meta)
+        : { A: false, B: false, C: false, D: false },
     [selectedIds, meta],
   );
 
-  const isVariants = config.questionTypeMode === "variants";
-  const rearrangeDisabled = !isVariants || !availability.rearrangements;
-  const conversionsDisabled = !isVariants || !availability.conversions;
+  const selectableSelectedCount = useMemo(() => {
+    const selectableIds = new Set(
+      displayEntries.filter((e) => e.selectable).map((e) => e.id),
+    );
+    return selectedIds.filter((id) => selectableIds.has(id)).length;
+  }, [displayEntries, selectedIds]);
 
-  const effectiveRearrangements = !rearrangeDisabled && config.rearrangements;
-  const effectiveConversions = !conversionsDisabled && config.conversions;
+  const displayEntriesRef = useRef(displayEntries);
+  displayEntriesRef.current = displayEntries;
 
-  const toggle = (id: string) => {
+  const applyDisplayPreferences = useCallback(() => {
+    setAppliedContext({ ...draftContext });
+    storeDisplayContext(draftContext);
+  }, [draftContext]);
+
+  const toggleSelectable = useCallback((id: string) => {
+    const entry = displayEntriesRef.current.find((e) => e.id === id);
+    if (entry && !entry.selectable) return;
+
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
-  };
+  }, []);
 
-  const selectAllPaper = (entries: SubtopicEntry[], select: boolean) => {
-    const ids = entries.map((e) => e.id);
+  const selectAllPaper = (entries: DisplayableEntry[], select: boolean) => {
+    const ids = entries.filter((e) => e.selectable).map((e) => e.id);
     setSelectedIds((prev) => {
       if (select) {
         return [...new Set([...prev, ...ids])];
@@ -151,40 +190,69 @@ export function SelectorPage() {
   };
 
   const handleReadyClick = () => {
-    if (selectedIds.length === 0) {
+    if (selectableSelectedCount === 0) {
       notifications.show({
         color: "orange",
-        message: "Select at least one equation first.",
+        message: "Select at least one available equation first.",
       });
       return;
     }
+    setConfig((prev) => ({
+      ...prev,
+      selectedTranches: normalizeSelectedTranches(
+        prev.selectedTranches,
+        trancheAvailability,
+      ),
+    }));
     openConfigModal();
   };
 
   const handleGenerate = () => {
-    if (!meta || selectedIds.length === 0) return;
+    if (!meta || selectableSelectedCount === 0) return;
 
-    const variant_selection = buildVariantSelection(
-      config.questionTypeMode,
-      effectiveRearrangements,
-      effectiveConversions,
+    const selectableIds = displayEntries
+      .filter((e) => e.selectable && selectedIds.includes(e.id))
+      .map((e) => e.id);
+
+    const trancheSelection = buildTrancheSelection(
+      config.practiceMode,
+      config.selectedTranches,
     );
-    const topics = selectedTopicKeys(selectedIds, meta);
+    const topics = selectedTopicKeys(selectableIds, meta);
+    const isPreset =
+      config.practiceMode === "beginner" ||
+      config.practiceMode === "standard_progression" ||
+      config.practiceMode === "randomised";
+
+    if (
+      config.practiceMode === "custom" &&
+      (!trancheSelection.tranches || trancheSelection.tranches.length === 0)
+    ) {
+      notifications.show({
+        color: "orange",
+        message: "Select at least one question type for custom practice.",
+      });
+      return;
+    }
 
     generateQuiz.mutate(
       {
         topics,
-        tranche_selection: variant_selection,
+        tranche_selection: trancheSelection,
         include_answer: true,
         include_formula: true,
-        count: config.questionCount,
+        count: isPreset ? 8 : config.questionCount,
+        quiz_mode: config.practiceMode,
+        display_context: appliedContext,
       },
       {
         onSuccess: (data) => {
-          startNewQuiz(data.questions);
+          storeDisplayContext(appliedContext);
+          startNewQuiz(data.questions, config.practiceMode);
           setPreferences({
-            viewMode: config.viewMode,
-            generatePdf: config.generatePdf,
+            ...preferences,
+            questionFontPreset: loadStoredFontPreset(),
+            displayContext: appliedContext,
           });
           closeConfigModal();
           navigate("/quiz");
@@ -192,7 +260,7 @@ export function SelectorPage() {
         onError: (err) => {
           notifications.show({
             color: "red",
-            title: "Could not generate quiz",
+            title: "Could not generate set",
             message: err.message,
           });
         },
@@ -242,7 +310,7 @@ export function SelectorPage() {
               </span>
             </Title>
             <Text c="dimmed" maw={560}>
-              Choose from the equations below to instantly generate your own unique quiz.
+              Choose from the equations below to instantly generate your own unique practice set.
             </Text>
           </Box>
           <Group gap="sm" align="center">
@@ -250,7 +318,7 @@ export function SelectorPage() {
               size="lg"
               className="btn-ready"
               onClick={handleReadyClick}
-              disabled={selectedIds.length === 0}
+              disabled={selectableSelectedCount === 0}
             >
               ready?
             </Button>
@@ -258,14 +326,16 @@ export function SelectorPage() {
           </Group>
         </Group>
 
-        <Group justify="space-between" align="center">
-          <SquareCheckboxLabel
-            label="show AQA specification reference"
-            checked={showSpecCodes}
-            onChange={setShowSpecCodes}
-          />
+        <DisplayPreferencesBar
+          draft={draftContext}
+          applied={appliedContext}
+          onDraftChange={setDraftContext}
+          onApply={applyDisplayPreferences}
+        />
+
+        <Group justify="flex-end" align="center">
           <Text className="meta-mono">
-            {selectedIds.length} selected
+            {selectableSelectedCount} selected
           </Text>
         </Group>
 
@@ -279,8 +349,7 @@ export function SelectorPage() {
                 title="paper 1"
                 entries={paper1}
                 selectedIds={selectedIds}
-                showSpecCodes={showSpecCodes}
-                onToggle={toggle}
+                onToggle={toggleSelectable}
                 onSelectAll={(select) => selectAllPaper(paper1, select)}
               />
             </Box>
@@ -291,8 +360,7 @@ export function SelectorPage() {
                 title="paper 2"
                 entries={paper2}
                 selectedIds={selectedIds}
-                showSpecCodes={showSpecCodes}
-                onToggle={toggle}
+                onToggle={toggleSelectable}
                 onSelectAll={(select) => selectAllPaper(paper2, select)}
               />
             </Box>
@@ -307,8 +375,7 @@ export function SelectorPage() {
         onConfigChange={setConfig}
         onConfirm={handleGenerate}
         loading={generateQuiz.isPending}
-        rearrangeDisabled={rearrangeDisabled}
-        conversionsDisabled={conversionsDisabled}
+        trancheAvailability={trancheAvailability}
       />
     </Container>
   );

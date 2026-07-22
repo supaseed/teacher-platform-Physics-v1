@@ -1,11 +1,21 @@
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import type { Question } from "../api/apiTypes";
+import type { Question, DisplayContext } from "../api/apiTypes";
 import type { ViewMode } from "../components/ViewModeToggle";
+import { DEFAULT_DISPLAY_CONTEXT } from "../utils/displayContext";
+import {
+  DEFAULT_QUESTION_FONT_PRESET,
+  loadStoredFontPreset,
+  type QuestionFontPreset,
+} from "../utils/questionFontSize";
+import type { PracticeMode } from "../utils/subtopics";
 
 export interface QuizPreferences {
   viewMode: ViewMode;
   generatePdf: boolean;
+  largePrintPdf: boolean;
+  questionFontPreset: QuestionFontPreset;
+  displayContext: DisplayContext;
 }
 
 export interface QuestionAnswerRecord {
@@ -22,12 +32,19 @@ export interface QuestionAnswerRecord {
 const DEFAULT_PREFERENCES: QuizPreferences = {
   viewMode: "list",
   generatePdf: false,
+  largePrintPdf: false,
+  questionFontPreset: loadStoredFontPreset() ?? DEFAULT_QUESTION_FONT_PRESET,
+  displayContext: DEFAULT_DISPLAY_CONTEXT,
 };
 
 interface QuizContextValue {
   questions: Question[];
   setQuestions: (questions: Question[]) => void;
-  startNewQuiz: (questions: Question[]) => void;
+  startNewQuiz: (
+    questions: Question[],
+    practiceMode?: PracticeMode | null,
+  ) => void;
+  practiceMode: PracticeMode | null;
   preferences: QuizPreferences;
   setPreferences: (preferences: QuizPreferences) => void;
   answers: Record<string, QuestionAnswerRecord>;
@@ -44,6 +61,7 @@ const QuizContext = createContext<QuizContextValue | undefined>(undefined);
  */
 export function QuizProvider({ children }: { children: ReactNode }) {
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [practiceMode, setPracticeMode] = useState<PracticeMode | null>(null);
   const [preferences, setPreferences] =
     useState<QuizPreferences>(DEFAULT_PREFERENCES);
   const [answers, setAnswers] = useState<Record<string, QuestionAnswerRecord>>(
@@ -54,14 +72,19 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     setAnswers((prev) => ({ ...prev, [record.questionId]: record }));
   }, []);
 
-  const startNewQuiz = useCallback((newQuestions: Question[]) => {
-    setAnswers({});
-    setQuestions(newQuestions);
-  }, []);
+  const startNewQuiz = useCallback(
+    (newQuestions: Question[], nextPracticeMode?: PracticeMode | null) => {
+      setAnswers({});
+      setQuestions(newQuestions);
+      setPracticeMode(nextPracticeMode ?? null);
+    },
+    [],
+  );
 
   const resetQuizSession = useCallback(() => {
     setQuestions([]);
     setAnswers({});
+    setPracticeMode(null);
     setPreferences(DEFAULT_PREFERENCES);
   }, []);
 
@@ -74,6 +97,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
       questions,
       setQuestions,
       startNewQuiz,
+      practiceMode,
       preferences,
       setPreferences,
       answers,
@@ -83,6 +107,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     }),
     [
       questions,
+      practiceMode,
       preferences,
       answers,
       recordAnswer,
