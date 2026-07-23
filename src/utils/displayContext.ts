@@ -2,8 +2,10 @@ import type {
   BoardTopicMeta,
   DisplayContext,
   ExamBoardId,
+  PathwayId,
   SelectorPlacement,
   SubtopicEntry,
+  TierId,
   TopicPresentation,
 } from "../api/apiTypes";
 import localBoardTopics from "../data/board_topics.json";
@@ -354,8 +356,16 @@ export function compareForDisplayContext(
     if (segA && segB) {
       const len = Math.max(segA.length, segB.length);
       for (let i = 0; i < len; i += 1) {
-        const diff = (segA[i] ?? 0) - (segB[i] ?? 0);
-        if (diff !== 0) return diff;
+        const left = segA[i];
+        const right = segB[i];
+        if (left === undefined) return -1;
+        if (right === undefined) return 1;
+        if (typeof left === "number" && typeof right === "number") {
+          if (left !== right) return left - right;
+        } else {
+          const diff = String(left).localeCompare(String(right));
+          if (diff !== 0) return diff;
+        }
       }
     } else {
       const diff = presA.spec_code.localeCompare(presB.spec_code);
