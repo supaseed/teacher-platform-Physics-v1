@@ -126,6 +126,11 @@ export type QuizOptions = Partial<Record<OptionLetter, string>>;
  * set `include_answer`; equation fields only when `include_formula`.
  */
 export interface Question {
+  /**
+   * Backend template id (e.g. PHY-GCSE-ENERGY-KINA-01). The same stem can
+   * appear more than once in a generated set with different numbers, so this
+   * is *not* unique per quiz slot. Use `questionInstanceKey` for UI state.
+   */
   question_id: string;
   subtopic: string;
   topic_key: string;

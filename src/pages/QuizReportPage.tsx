@@ -16,6 +16,7 @@ import { IconArrowLeft, IconCheck, IconX } from "@tabler/icons-react";
 
 import { useQuiz } from "../state/QuizContext";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { questionInstanceKey } from "../utils/questionIdentity";
 
 export function QuizReportPage() {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ export function QuizReportPage() {
 
   const summary = useMemo(() => {
     const records = questions
-      .map((q) => answers[q.question_id] ?? null)
+      .map((q, i) => answers[questionInstanceKey(q.question_id, i)] ?? null)
       .filter((r): r is NonNullable<typeof r> => r !== null);
 
     const correct = records.filter((r) => r.correct);
@@ -104,7 +105,7 @@ export function QuizReportPage() {
               <Stack gap="sm">
                 {summary.correct.map((record) => (
                   <Group
-                    key={record.questionId}
+                    key={questionInstanceKey(record.questionId, record.index)}
                     justify="space-between"
                     wrap="wrap"
                     align="flex-start"
@@ -130,7 +131,7 @@ export function QuizReportPage() {
               <Divider color="var(--panel-border)" />
               <Stack gap="lg">
                 {summary.mistakes.map((record) => (
-                  <Box key={record.questionId}>
+                  <Box key={questionInstanceKey(record.questionId, record.index)}>
                     <Text fw={600} mb="xs">
                       Q{record.index + 1}
                     </Text>

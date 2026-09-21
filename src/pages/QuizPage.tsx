@@ -30,6 +30,7 @@ import {
   type QuestionFontPreset,
 } from "../utils/questionFontSize";
 import { PRACTICE_MODE_LABELS } from "../utils/subtopics";
+import { questionInstanceKey } from "../utils/questionIdentity";
 
 const LEAVE_CONFIRM_MESSAGE =
   "leave this practice set? your unique set of questions will be lost.";
@@ -171,11 +172,11 @@ export function QuizPage() {
     layout: ViewMode = "single",
   ) => (
     <QuestionCard
-      key={`${keyPrefix}${q.question_id}`}
+      key={`${keyPrefix}${questionInstanceKey(q.question_id, i)}`}
       question={q}
       index={i}
       onAnswer={recordAnswer}
-      savedAnswer={answers[q.question_id]}
+      savedAnswer={answers[questionInstanceKey(q.question_id, i)]}
       layout={layout}
     />
   );
