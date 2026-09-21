@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import type { Question, DisplayContext } from "../api/apiTypes";
 import type { ViewMode } from "../components/ViewModeToggle";
 import { DEFAULT_DISPLAY_CONTEXT } from "../utils/displayContext";
+import { questionInstanceKey } from "../utils/questionIdentity";
 import {
   DEFAULT_QUESTION_FONT_PRESET,
   loadStoredFontPreset,
@@ -69,7 +70,12 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   );
 
   const recordAnswer = useCallback((record: QuestionAnswerRecord) => {
-    setAnswers((prev) => ({ ...prev, [record.questionId]: record }));
+    // Key by quiz slot + template id. Backend question_id is reused when the
+    // same stem is generated twice, and must not overwrite a sibling's state.
+    setAnswers((prev) => ({
+      ...prev,
+      [questionInstanceKey(record.questionId, record.index)]: record,
+    }));
   }, []);
 
   const startNewQuiz = useCallback(
@@ -90,7 +96,9 @@ export function QuizProvider({ children }: { children: ReactNode }) {
 
   const isQuizComplete =
     questions.length > 0 &&
-    questions.every((q) => answers[q.question_id] !== undefined);
+    questions.every(
+      (q, i) => answers[questionInstanceKey(q.question_id, i)] !== undefined,
+    );
 
   const value = useMemo<QuizContextValue>(
     () => ({

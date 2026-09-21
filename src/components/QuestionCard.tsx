@@ -29,6 +29,7 @@ import { ReportModal } from "./ReportModal";
 import type { QuestionAnswerRecord } from "../state/QuizContext";
 import type { ViewMode } from "./ViewModeToggle";
 import { splitQuestionText } from "../utils/formatQuestionText";
+import { questionInstanceKey } from "../utils/questionIdentity";
 import {
   baseEquation,
   checkAnswerLocally,
@@ -62,6 +63,8 @@ export function QuestionCard({
   const [reportOpened, { open: openReport, close: closeReport }] =
     useDisclosure(false);
 
+  const instanceKey = questionInstanceKey(question.question_id, index);
+
   const [numericValue, setNumericValue] = useState<number | string>("");
   const [selectedLetter, setSelectedLetter] = useState<OptionLetter | null>(
     null,
@@ -79,8 +82,16 @@ export function QuestionCard({
       : null,
   );
 
+  // Keep local feedback in sync with this slot only. Template question_ids can
+  // repeat, so identity is index + id; never inherit a sibling's saved answer.
   useEffect(() => {
-    if (!savedAnswer) return;
+    setNumericValue("");
+    setSelectedLetter(null);
+    if (!savedAnswer) {
+      setSubmitted(false);
+      setResult(null);
+      return;
+    }
     setSubmitted(true);
     setResult({
       correct: savedAnswer.correct,
@@ -89,7 +100,7 @@ export function QuestionCard({
       base_formula: savedAnswer.baseEquation,
       rearranged_formula: savedAnswer.rearrangedEquation,
     });
-  }, [savedAnswer]);
+  }, [instanceKey, savedAnswer]);
 
   const showOptions = hasQuizOptions(question.options);
   const options = optionEntries(question.options);
@@ -180,6 +191,7 @@ export function QuestionCard({
       <Box className="no-print">
         <Group align="flex-end" gap="xs">
           <NumberInput
+            id={`numeric-answer-${instanceKey}`}
             label={
               <Text className="meta-mono" component="span">
                 answer
@@ -215,13 +227,14 @@ export function QuestionCard({
           select answer
         </Text>
         <Radio.Group
+          name={`mcq-${instanceKey}`}
           value={selectedLetter}
           onChange={(value) => setSelectedLetter(value as OptionLetter)}
         >
           <Stack gap={4} mt={6}>
             {options.map(({ letter, label }) => (
               <Radio
-                key={`${question.question_id}-${letter}`}
+                key={`${instanceKey}-${letter}`}
                 value={letter}
                 size="sm"
                 label={
