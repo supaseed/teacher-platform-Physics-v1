@@ -15,14 +15,23 @@ A teacher-friendly front-end for a Physics Question Generator, built with React 
 
 ## Configuration
 
-The backend URL lives in a single constant:
+The backend origin is read from `VITE_API_BASE_URL` at build time (`src/api/config.ts`). If the variable is unset, it falls back to the live Render API:
 
-```ts
-// src/api/config.ts
-export const API_BASE = "http://localhost:8000";
+```
+https://mcq-gen-v1-0.onrender.com
 ```
 
-Change it there to point at your FastAPI server.
+Optional local override (create `.env.local`):
+
+```
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+Vercel Production should set:
+
+```
+VITE_API_BASE_URL=https://mcq-gen-v1-0.onrender.com
+```
 
 ## Getting started
 
@@ -39,7 +48,7 @@ npm run lint     # oxlint
 ```
 src/
   api/
-    config.ts        # API_BASE constant
+    config.ts        # API_BASE (VITE_API_BASE_URL, Render fallback)
     apiTypes.ts      # strict request/response types
     client.ts        # typed fetch wrapper (apiGet / apiPost)
     hooks.ts         # useSubtopicMeta / useGenerateQuiz / useCheckAnswer / useReportQuestion
