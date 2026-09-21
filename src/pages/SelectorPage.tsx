@@ -303,14 +303,14 @@ export function SelectorPage() {
       <Stack gap="lg">
         <Group justify="space-between" align="flex-start" wrap="wrap">
           <Box>
-            <Title order={1} mb="xs">
-              <span className="contrast-block">physics</span>{" "}
+            <Title order={1} mb="xs" className="homepage-heading">
+              <span className="contrast-block">VESRAU</span>{" "}
               <span className="contrast-block contrast-block--accent">
-                question generator
+                GCSE Physics
               </span>
             </Title>
-            <Text c="dimmed" maw={560}>
-              Choose from the equations below to instantly generate your own unique practice set.
+            <Text c="dimmed" maw={720}>
+              Choose one or more of the equations below, then click 'Ready?'. Set the difficulty and a practice set of questions will generate instantly.
             </Text>
           </Box>
           <Group gap="sm" align="center">
