@@ -167,6 +167,15 @@ body .mantine-Title-root {
   text-transform: none;
 }
 
+/* Homepage brand/subject pills keep Nick's exact casing (VESRAU, GCSE Physics). */
+body .mantine-Title-root.homepage-heading {
+  text-transform: none;
+}
+
+.homepage-heading .contrast-block {
+  text-transform: none;
+}
+
 .contrast-block--accent {
   background-color: var(--panel-accent);
 }
